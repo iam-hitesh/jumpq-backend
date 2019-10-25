@@ -1,7 +1,6 @@
 import json
 
 from django.http import JsonResponse
-from django.core.cache import cache
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
@@ -16,12 +15,13 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
     HTTP_502_BAD_GATEWAY
 )
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework_jwt.settings import api_settings
 
 
 from .backend import UserAuthentication
-from users.models import *
+from .models import *
 import users.constants
 import users.forms
 from .constants import *
@@ -64,7 +64,7 @@ class SendOTP(APIView):
 
 
 
-class MerchantLogin(APIView):
+class LoginView(APIView):
     """
     This class will be login user and generating Token for API Authentication, 
     this will have public access(as anyone open to login this)
@@ -87,10 +87,10 @@ class MerchantLogin(APIView):
             # Call UserAuthentication class from backends.py file for custom
             # authentication checks
             Auth = UserAuthentication()
-            user = Auth.authenticate(mobile=mobile, otp=otp, user_type=User.ACCOUNT_TYPE.ADMIN)
+            user = Auth.authenticate(mobile=mobile, otp=otp)
 
             if not user:
-                return JsonResponse({'resp_code': 0, 'message': 'Invalid Credentials'},
+                return JsonResponse({'resp_code': 0, 'message': 'OTP Expired'},
                                     status=HTTP_400_BAD_REQUEST)
 
             try:
@@ -116,67 +116,32 @@ class MerchantLogin(APIView):
         except KeyError:
             # If any key is missing during sending the data
             return JsonResponse({'resp_code': 0, 'message': 'please provide a '
-                                                         'phone number and a OTP'},
+                                                         'mobile number and a OTP'},
                                 status=HTTP_400_BAD_REQUEST)
         except Exception:
-            return JsonResponse({'resp_code': 0, 'message': 'Some Error Occurred'},
+            return JsonResponse({'resp_code': 0, 'message': 'Invalid Credentials'},
                                 status=HTTP_400_BAD_REQUEST)
 
 
-class CustomerLogin(APIView):
-    """
-    This class will be login user and generating Token for API Authentication, 
-    this will have public access(as anyone open to login this)
-    """
-
+class CountryView(generics.ListCreateAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
     permission_classes = (AllowAny,)
 
-    def post(self, request):
-        """
-        post method
-        :param request: 
-        :return: 
-        """
+    # def list(self, request):
+    #     # Note the use of `get_queryset()` instead of `self.queryset`
+    #     queryset = self.get_queryset()
+    #     serializer = UserSerializer(queryset, many=True)
+    #     return Response(serializer.data)
 
-        try:
-            data = json.loads(request.body)
-            mobile = data['mobile']
-            otp = data['otp']
 
-            # Call UserAuthentication class from backends.py file for custom
-            # authentication checks
-            Auth = UserAuthentication()
-            user = Auth.authenticate(mobile=mobile, otp=otp, user_type=User.ACCOUNT_TYPE.ADMIN)
+class StateView(generics.ListCreateAPIView):
+    queryset = State.objects.all()
+    serializer_class = StateSerializer
+    permission_classes = (AllowAny, )
 
-            if not user:
-                return JsonResponse({'resp_code': 0, 'message': 'Invalid Credentials'},
-                                    status=HTTP_400_BAD_REQUEST)
 
-            try:
-                # This is will generate a token for authentication
-                jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-                jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-
-                payload = jwt_payload_handler(user)
-                token = jwt_encode_handler(payload)
-
-                user = User.objects.get(mobile=mobile)
-                user_data = UserSerializer(user, many=False)
-
-                return JsonResponse({'resp_code': 1,'message':'Login successful',
-                                     'token': token, 'profile':user_data.data}, status=HTTP_202_ACCEPTED)
-            except:
-                return JsonResponse({'resp_code': 0,
-                                     'message': 'can not authenticate with the '
-                                                'given credentials or the account '
-                                                'has been deactivated'},
-                                    status=HTTP_400_BAD_REQUEST)
-
-        except KeyError:
-            # If any key is missing during sending the data
-            return JsonResponse({'resp_code': 0, 'message': 'please provide a '
-                                                         'phone number and a password'},
-                                status=HTTP_400_BAD_REQUEST)
-        except:
-            return JsonResponse({'status': 0, 'message': 'Some Error Occurred'},
-                                status=HTTP_400_BAD_REQUEST)
+class CityView(generics.ListCreateAPIView):
+    queryset = City.objects.all()
+    serializer_class = StateSerializer
+    permission_classes = (AllowAny, )

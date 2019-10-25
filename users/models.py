@@ -32,7 +32,7 @@ class CustomAccountManager(BaseUserManager):
         user.is_active = True
         user.is_staff = True
         user.is_superuser = True
-        user.user_type = User.ADMIN
+        user.user_type = User.ACCOUNT_TYPE.ADMIN
         user.save(using=self._db)
         return user
 
@@ -64,6 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         (2, 'MERCHANT', 'Merchant'),
         (3, 'CUSTOMER', 'Customer'))
 
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=30, default='', null=True,
                             verbose_name=u"Name of User", db_index=True)
     mobile = models.CharField(max_length=15, default=0, unique=True,
@@ -90,7 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def __str__(self):
-        return "{} - {}".format(self.name, self.email)
+        return "{} - {}".format(self.name, self.mobile)
 
     class Meta:
         ordering = ('mobile',)
@@ -103,9 +104,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             user=self,
             token_type=token_type,
             is_used=False
-        ).last()
+        )
 
-        if otp == token.token:
+        if otp == token.last().token:
+            token.update(is_used=True)
             return True
         else:
             return False
@@ -190,7 +192,7 @@ class Tokens(models.Model):
         verbose_name_plural = "Tokens"
 
 
-class Countries(models.Model):
+class Country(models.Model):
     country_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     country_name = models.CharField(max_length=255, default='', null=False,
                                     db_index=True)
@@ -213,9 +215,9 @@ class Countries(models.Model):
         verbose_name_plural = "Countries"
 
 
-class States(models.Model):
+class State(models.Model):
     state_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    country = models.ForeignKey(Countries, db_index=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, db_index=True, on_delete=models.CASCADE)
     state_name = models.CharField(max_length=255, default='', null=False,
                                   db_index=True)
     alt_state_name = models.CharField(max_length=255, default='', null=False,
@@ -225,6 +227,8 @@ class States(models.Model):
                                   db_index=True)
     phone_code = models.IntegerField(default=91, null=True,
                                      db_index=True)
+    currency = models.CharField(max_length=50, default="INR")
+    currency_sign = models.CharField(max_length=50, default="₹")
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -237,8 +241,8 @@ class States(models.Model):
         verbose_name_plural = "Countries"
 
 
-class Cities(models.Model):
-    state = models.ForeignKey(Countries, db_index=True, on_delete=models.CASCADE)
+class City(models.Model):
+    state = models.ForeignKey(State, db_index=True, on_delete=models.CASCADE)
     city_name = models.CharField(max_length=255, default='', null=False,
                                  db_index=True)
     alt_city_name = models.CharField(max_length=255, default='', null=False,
@@ -272,9 +276,9 @@ class Addresses(models.Model):
                     (OTHER, 'Others'))
     address_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, db_index=True, on_delete=models.CASCADE)
-    country = models.ForeignKey(Countries, db_index=True, on_delete=models.CASCADE)
-    state = models.ForeignKey(States, db_index=True, on_delete=models.CASCADE)
-    city = models.ForeignKey(Cities, db_index=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, db_index=True, on_delete=models.CASCADE)
+    state = models.ForeignKey(State, db_index=True, on_delete=models.CASCADE)
+    city = models.ForeignKey(City, db_index=True, on_delete=models.CASCADE)
     address = models.CharField(max_length=255, default='', null=False)
     landmark = models.CharField(max_length=255, default='', null=True)
     pincode = models.CharField(max_length=255, default='', null=False)

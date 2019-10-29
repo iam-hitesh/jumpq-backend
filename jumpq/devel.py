@@ -4,7 +4,7 @@ from decouple import config
 # Database Connection
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'NAME': config('DB_NAME'),
         'USER' : config('DB_USER'),
         'PASSWORD' : config('DB_PASSWORD'),

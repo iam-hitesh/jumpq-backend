@@ -1,7 +1,7 @@
 import uuid
 
 from django.db import models
-# from django.contrib.gis.db.models import PointField
+from django.contrib.gis.db.models import PointField
 from django.template.defaultfilters import slugify
 from django.utils import timezone
 
@@ -14,7 +14,7 @@ class Merchant(models.Model):
     merchant_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     merchant_address = models.ForeignKey(users.models.Addresses, on_delete=models.CASCADE)
     merchant_slug = models.SlugField(unique=True, max_length=255, null=False)
-    merchant_head = models.ManyToManyField(users.models.User)
+    head = models.ManyToManyField(users.models.User)
     merchant_name = models.CharField(max_length=255, db_index=True)
     merchant_contact = models.IntegerField(db_index=True)
     merchant_email = models.EmailField(db_index=True)
@@ -75,15 +75,15 @@ class Store(models.Model):
     )
     store_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE)
-    store_category = models.ManyToManyField(MerchantCategory)
+    category = models.ManyToManyField(MerchantCategory)
     store_address = models.ForeignKey(users.models.Addresses, on_delete=models.CASCADE)
     store_latitude = models.CharField(max_length=255)
     store_longitude = models.CharField(max_length=255)
     store_size = models.IntegerField(choices=STORE_SIZE, default=STORE_SIZE.SMALL)
-    # store_location = models.PointField()
+    store_location = PointField()
     store_map_url = models.URLField()
 
-    store_head = models.ManyToManyField(users.models.User)
+    head = models.ManyToManyField(users.models.User)
     store_slug = models.SlugField(unique=True, max_length=255, null=False)
     store_name = models.CharField(max_length=255, db_index=True)
     store_contact = models.IntegerField(db_index=True)

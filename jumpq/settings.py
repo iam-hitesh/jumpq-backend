@@ -47,7 +47,6 @@ DJANGO_CORE_APPS = (
 THIRD_PARTY_APPS = (
     'rest_framework',
     'corsheaders',
-    'rest_framework_swagger',
 )
 
 CUSTOM_APPS = (

@@ -1,0 +1,8 @@
+.DS_Store
+.env
+*.pc
+*.pyc
+*.pyo
+__pycache__
+._*
+.Trashes

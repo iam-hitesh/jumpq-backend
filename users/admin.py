@@ -6,6 +6,9 @@ from .models import *
 
 admin.site.register(User)
 admin.site.register(Country)
+admin.site.register(State)
+admin.site.register(City)
+admin.site.register(Addresses)
 # admin.site.register(FareMap)
 # admin.site.register(Packages)
 # admin.site.register(Trips)

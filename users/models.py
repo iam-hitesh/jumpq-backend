@@ -198,11 +198,11 @@ class Country(models.Model):
                                     db_index=True)
     alt_country_name = models.CharField(max_length=255, default='', null=False,
                                         db_index=True)
-    iso = models.CharField(max_length=255, default='', null=False)
     country_code = models.CharField(max_length=255, default='', null=False,
                                     db_index=True)
-    phone_code = models.IntegerField(default=91,
-                                     db_index=True)
+    phone_code = models.IntegerField(default=91, db_index=True)
+    currency = models.CharField(max_length=50, default="INR")
+    currency_sign = models.CharField(max_length=50, default="₹")
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -222,23 +222,20 @@ class State(models.Model):
                                   db_index=True)
     alt_state_name = models.CharField(max_length=255, default='', null=False,
                                       db_index=True)
-    iso = models.CharField(max_length=255, default='', null=False)
     state_code = models.CharField(max_length=255, default='', null=False,
                                   db_index=True)
     phone_code = models.IntegerField(default=91, null=True,
                                      db_index=True)
-    currency = models.CharField(max_length=50, default="INR")
-    currency_sign = models.CharField(max_length=50, default="₹")
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} - {}".format(self.state_name, self.country.name)
+        return "{} - {}".format(self.state_name, self.country.country_name)
 
     class Meta:
-        verbose_name = "Country"
-        verbose_name_plural = "Countries"
+        verbose_name = "State"
+        verbose_name_plural = "States"
 
 
 class City(models.Model):
@@ -247,7 +244,6 @@ class City(models.Model):
                                  db_index=True)
     alt_city_name = models.CharField(max_length=255, default='', null=False,
                                      db_index=True)
-    iso = models.CharField(max_length=255, default='', null=False)
     city_code = models.CharField(max_length=255, default='', null=False,
                                  db_index=True)
     phone_code = models.IntegerField(default=91, null=True,
@@ -257,7 +253,7 @@ class City(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} - {}".format(self.city_name, self.state.name)
+        return "{} - {}".format(self.city_name, self.state.state_name)
 
     class Meta:
         verbose_name = "City"
@@ -279,12 +275,12 @@ class Addresses(models.Model):
     country = models.ForeignKey(Country, db_index=True, on_delete=models.CASCADE)
     state = models.ForeignKey(State, db_index=True, on_delete=models.CASCADE)
     city = models.ForeignKey(City, db_index=True, on_delete=models.CASCADE)
-    address = models.CharField(max_length=255, default='', null=False)
-    landmark = models.CharField(max_length=255, default='', null=True)
-    pincode = models.CharField(max_length=255, default='', null=False)
-    location = models.CharField(max_length=255, default='', null=True)
-    map_location = models.TextField()
-    mobile = models.IntegerField()
+    address = models.CharField(max_length=200, default='')
+    landmark = models.CharField(max_length=200, default='')
+    pincode = models.CharField(max_length=30, default='')
+    location = models.CharField(max_length=200, default='')
+    google_map_link = models.CharField(max_length=200, blank=True)
+    mobile = models.BigIntegerField()
     address_type = models.IntegerField(default=HOME, choices=ADDRESS_TYPE)
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)

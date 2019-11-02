@@ -10,3 +10,4 @@
     https://tornimo.io/
     https://instrumentalapp.com/
     https://www.site24x7.com/
+    https://stackoverflow.com/questions/46902357/error-loading-mysqldb-module-did-you-install-mysqlclient-or-mysql-python
